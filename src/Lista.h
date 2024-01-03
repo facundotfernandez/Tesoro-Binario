@@ -248,6 +248,39 @@ public:
     }
 
     /*
+     * pre : El elemento existe en la Lista (@throws out_of_range).
+     * post: Elimina de la Lista el elemento.
+     */
+    void removerPrimerAparicion(T elemento) {
+
+        Nodo<T> *aBorrar = this->primero;
+        Nodo<T> *anterior = NULL;
+
+        this->iniciarCursor();
+
+        while (this->avanzarCursor() && this->obtenerCursor() != elemento) {
+            anterior = aBorrar;
+            aBorrar = aBorrar->obtenerSiguiente();
+        }
+
+        if (!(aBorrar)) {
+            throw std::out_of_range("Elemento no encontrado");
+        }
+
+        if (anterior == NULL) {
+            this->primero = aBorrar->obtenerSiguiente();
+        } else {
+            anterior->reemplazarSiguiente(aBorrar->obtenerSiguiente());
+        }
+
+        delete aBorrar;
+        this->longitud--;
+
+        /* cualquier recorrido actual queda invalidado */
+        this->iniciarCursor();
+    }
+
+    /*
      * pre : -
      * post: Inicializa el cursor de la Lista preparado para hacer un nuevo recorrido sobre sus elementos.
      */
