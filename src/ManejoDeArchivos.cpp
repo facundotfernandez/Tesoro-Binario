@@ -121,10 +121,9 @@ void ManejoDeArchivos::exportar(Plano *plano, bool ocultarEnemigos) {
 
     Casillero *casillero = plano->obtenerCasillero(filaCentral, columnaCentral);
     unsigned int tipoCasillero;
-    bool esCentral;
+    bool esCentral = false;
     Jugador *jugador = casillero->obtenerJugador();
     Jugador *ocupante;
-
 
     /* Copia las imagenes en todas las celdas del tablero, según corresponda*/
     for (int fila = 0; fila < dimensionTablero; fila++) {
@@ -136,12 +135,17 @@ void ManejoDeArchivos::exportar(Plano *plano, bool ocultarEnemigos) {
              * La correccion permite armar un 5x5 alrededor del casillero principal
              * y corre el 5x5 en caso de que no se pueda dejar el casillero principal exactamente en el centro.
              */
+
             if (fila == (dimensionTablero - 1) || columna == 0) {
                 tipoCasillero = (fila == (dimensionTablero - 1) && columna == 0) ? (ICONO) : (INDICADOR);
+                esCentral = false;
+                ocupante = NULL;
 
             } else {
                 filaReal = correccionFila - fila;
                 columnaReal = correccionColumna + columna;
+
+                esCentral = ((filaReal == filaCentral) && (columnaReal == columnaCentral));
 
                 /* Se reemplaza el puntero a Casillero por puntero al Casillero actual */
                 casillero = plano->obtenerCasillero(filaReal, columnaReal);
@@ -201,8 +205,6 @@ void ManejoDeArchivos::exportar(Plano *plano, bool ocultarEnemigos) {
                 default:
                     throw logic_error("El tipo de casillero a mostrar no es valido");
             }
-
-            esCentral = ((filaReal == filaCentral) && (columnaReal == columnaCentral));
 
             fondo = (esCentral) ? (&fondoCentral) : (((imagen != (&fondoVacio)) && (ocupante != jugador))
                                                      ? (&fondoEnemigo) : (&fondoVacio));
