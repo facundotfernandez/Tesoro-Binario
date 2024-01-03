@@ -618,6 +618,9 @@ void Juego::moverTesoro(Jugador *jugador, unsigned int turnoActual) {
                 this->agregarCambio(enemigo, destino, PROTECCIONPERDIDA);
                 this->interacciones->mostrarTitulo(
                         "Encontraste un tesoro protegido, tus mercenarios eliminaron al pirata enemigo");
+            } else {
+
+                this->interacciones->mostrarTitulo("¡Alerta! Avistaste a un pirata enemigo y lograste escapar");
             }
             break;
 
