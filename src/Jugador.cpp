@@ -201,46 +201,23 @@ void Jugador::agregarProtegido(Casillero *aAgregar) {
     this->protegidos->agregarElemento(aAgregar);
 }
 
-bool Jugador::removerProtegido(Casillero *aRemover) {
+void Jugador::removerProtegido(Casillero *aRemover) {
     if (aRemover == NULL) {
         throw logic_error("El casillero no existe");
     } else if (aRemover->obtenerTipo() != PROTEGIDO) {
         throw logic_error("El casillero no es de tipo protegido");
     }
-    unsigned int posicion = 0;
-
-    this->protegidos->iniciarCursor();
-    while (this->protegidos->avanzarCursor()) {
-        if (this->protegidos->obtenerCursor() == aRemover) {
-            this->protegidos->removerElemento(posicion);
-            return true;
-        }
-        posicion++;
-    }
-    this->protegidos->iniciarCursor();
-    return false;
-
+    this->protegidos->removerPrimerAparicion(aRemover);
 }
 
-bool Jugador::removerInactivo(Casillero *aRemover) {
+void Jugador::removerInactivo(Casillero *aRemover) {
 
     if (aRemover == NULL) {
         throw logic_error("El casillero no existe");
     } else if (aRemover->obtenerTipo() != INACTIVO) {
         throw logic_error("El casillero no es de tipo inactivo");
     }
-    unsigned int posicion = 0;
-    this->inactivos->iniciarCursor();
-
-    while (this->inactivos->avanzarCursor()) {
-        if (this->inactivos->obtenerCursor() == aRemover) {
-            this->inactivos->removerElemento(posicion);
-            return true;
-        }
-        posicion++;
-    }
-    this->inactivos->iniciarCursor();
-    return false;
+    this->inactivos->removerPrimerAparicion(aRemover);
 }
 
 Pila<string> *Jugador::obtenerCambios() {
@@ -275,4 +252,26 @@ Lista<Casillero *> *Jugador::obtenerInactivos() {
 
 Lista<Casillero *> *Jugador::obtenerProtegidos() {
     return this->protegidos;
+}
+
+void Jugador::reemplazarProtegidos(Lista<Casillero *> *protegidos) {
+
+    if (protegidos == NULL) {
+        throw logic_error("La estructura debe existir");
+    }
+
+    this->protegidos->limpiar();
+    delete this->protegidos;
+    this->protegidos = protegidos;
+}
+
+void Jugador::reemplazarInactivos(Lista<Casillero *> *inactivos) {
+
+    if (inactivos == NULL) {
+        throw logic_error("La estructura debe existir");
+    }
+
+    this->inactivos->limpiar();
+    delete this->inactivos;
+    this->inactivos = inactivos;
 }
