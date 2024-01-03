@@ -121,7 +121,7 @@ void ManejoDeArchivos::exportar(Plano *plano, bool ocultarEnemigos) {
 
     Casillero *casillero = plano->obtenerCasillero(filaCentral, columnaCentral);
     unsigned int tipoCasillero;
-    bool esCentral = false;
+    bool esCentral;
     Jugador *jugador = casillero->obtenerJugador();
     Jugador *ocupante;
 
