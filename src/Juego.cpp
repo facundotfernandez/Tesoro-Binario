@@ -1034,7 +1034,7 @@ Casillero *Juego::obtenerTesoro(Jugador *jugador, string indicacion, bool cualqu
     Casillero *aPartir = this->interacciones->elegirMenu(casillerosFiltrados, indicacion);
 
     while (aPartir == NULL) {
-        this->interacciones->mostrarTitulo("No elegiste un tesoro valido");
+        this->interacciones->mostrarTitulo("No elegiste un tesoro válido");
         aPartir = this->interacciones->elegirMenu(casillerosFiltrados, indicacion);
     }
 
@@ -1064,7 +1064,7 @@ void Juego::jugarPartirTesoro(Jugador *jugador) {
                                               "Ingresa el casillero donde quieres colocar una parte del tesoro");
 
     if (destino->obtenerTipo() != VACIO) {
-        throw logic_error("Esa casilla esta ocupada");
+        throw logic_error("Esa casilla está ocupada");
     }
 
     jugador->usarCarta(PARTIRTESORO);
@@ -1073,7 +1073,7 @@ void Juego::jugarPartirTesoro(Jugador *jugador) {
     destino->convertirA(PARTIDO, jugador, aPartir);
     jugador->agregarCasillero(destino);
 
-    this->interacciones->mostrarTitulo("Tesoro partido con exito");
+    this->interacciones->mostrarTitulo("Tesoro partido con éxito");
 }
 
 void Juego::jugarRobarCarta(Jugador *jugador) {
@@ -1082,7 +1082,7 @@ void Juego::jugarRobarCarta(Jugador *jugador) {
     Jugador *enemigo = this->interacciones->elegirMenu(this->jugadores, jugador->obtenerId(), "Jugadores Activos");
 
     if (enemigo == NULL) {
-        throw logic_error("Opcion invalida");
+        throw logic_error("Opción inválida");
     } else if (enemigo == jugador) {
         throw logic_error("No podes robarte cartas a vos mismo");
     } else if (enemigo->obtenerCantidadDeCartas() == 0) {
