@@ -345,6 +345,7 @@ void Juego::actualizarInactivos(Jugador *jugador, unsigned int turnoActual) {
 
     this->validarExistencia(jugador);
 
+    Lista<Casillero *> *robosEnProceso = new Lista<Casillero *>();
     Lista<Casillero *> *inactivos = jugador->obtenerInactivos();
     Casillero *casillero;
     unsigned int inactivoHasta;
@@ -354,19 +355,24 @@ void Juego::actualizarInactivos(Jugador *jugador, unsigned int turnoActual) {
         casillero = inactivos->obtenerCursor();
         inactivoHasta = casillero->obtenerInactivoHasta();
 
-        if (inactivoHasta == turnoActual) {
-            casillero->convertirA(PIRATA, jugador);
-            this->agregarCambio(jugador, casillero, ROBOFINALIZADO);
+        if (inactivoHasta > turnoActual) {
+            robosEnProceso->agregarElemento(casillero);
         } else if (inactivoHasta < turnoActual) {
             throw logic_error("El turno en que deja de estar inactivo no puede ser anterior al actual");
+        } else {
+            casillero->convertirA(PIRATA, jugador);
+            this->agregarCambio(jugador, casillero, ROBOFINALIZADO);
         }
     }
+
+    jugador->reemplazarInactivos(robosEnProceso);
 }
 
 void Juego::actualizarProtegidos(Jugador *jugador, unsigned int turnoActual) {
 
     this->validarExistencia(jugador);
 
+    Lista<Casillero *> *protegidosActivos = new Lista<Casillero *>();
     Lista<Casillero *> *protegidos = jugador->obtenerProtegidos();
     Casillero *casillero;
     unsigned int protegidoHasta;
@@ -376,14 +382,17 @@ void Juego::actualizarProtegidos(Jugador *jugador, unsigned int turnoActual) {
         casillero = protegidos->obtenerCursor();
         protegidoHasta = casillero->obtenerProtegidoHasta();
 
-        if (protegidoHasta == turnoActual) {
-            jugador->removerProtegido(casillero);
-            casillero->convertirA(TESORO, jugador);
-            this->agregarCambio(jugador, casillero, PROTECCIONPERDIDA);
+        if (protegidoHasta > turnoActual) {
+            protegidosActivos->agregarElemento(casillero);
         } else if (protegidoHasta < turnoActual) {
             throw logic_error("El turno en que deja de estar protegido no puede ser anterior al actual");
+        } else {
+            casillero->convertirA(TESORO, jugador);
+            this->agregarCambio(jugador, casillero, PROTECCIONPERDIDA);
         }
     }
+
+    jugador->reemplazarProtegidos(protegidosActivos);
 }
 
 void Juego::actualizarOcupados(unsigned int turnoActual) {
