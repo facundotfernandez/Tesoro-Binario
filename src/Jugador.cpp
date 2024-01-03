@@ -208,8 +208,8 @@ bool Jugador::removerProtegido(Casillero *aRemover) {
         throw logic_error("El casillero no es de tipo protegido");
     }
     unsigned int posicion = 0;
-    this->protegidos->iniciarCursor();
 
+    this->protegidos->iniciarCursor();
     while (this->protegidos->avanzarCursor()) {
         if (this->protegidos->obtenerCursor() == aRemover) {
             this->protegidos->removerElemento(posicion);
@@ -217,7 +217,9 @@ bool Jugador::removerProtegido(Casillero *aRemover) {
         }
         posicion++;
     }
+    this->protegidos->iniciarCursor();
     return false;
+
 }
 
 bool Jugador::removerInactivo(Casillero *aRemover) {
@@ -237,6 +239,7 @@ bool Jugador::removerInactivo(Casillero *aRemover) {
         }
         posicion++;
     }
+    this->inactivos->iniciarCursor();
     return false;
 }
 
