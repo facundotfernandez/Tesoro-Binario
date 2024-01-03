@@ -1,277 +1,221 @@
-#include "Jugador.h"
+#ifndef JUGADOR_H
+#define JUGADOR_H
 
-Jugador::Jugador(unsigned int id) {
-    this->casilleros = new Lista<Casillero *>;
-    this->cartas = new Lista<Carta *>;
-    this->descripcion = new DatosJugador(id);
-    this->enJuego = true;
-    this->mercenariosContratados = false;
-    this->inactivos = new Lista<Casillero *>();
-    this->protegidos = new Lista<Casillero *>();
-}
+#include <cstdlib>
+#include "Lista.h"
+#include "Casillero.h"
+#include "Carta.h"
+#include "DatosJugador.h"
 
-Jugador::~Jugador() {
+class Jugador {
 
-    // Destructor de Casilleros
-    this->casilleros->limpiar();
-    delete this->casilleros;
+private:
 
-    // Destructor de Cartas
-    this->cartas->iniciarCursor();
-    while (this->cartas->avanzarCursor()) {
-        delete this->cartas->obtenerCursor();
-    }
-    delete this->cartas;
+    /* Casilleros ocupados por el Jugador. */
+    Lista<Casillero *> *casilleros;
 
-    // Destructor de Robos en proceso
-    this->inactivos->limpiar();
-    delete this->inactivos;
+    /* Cartas en la mano del Jugador. */
+    Lista<Carta *> *cartas;
 
-    // Destructor de Tesoros Protegidos
-    this->protegidos->limpiar();
-    delete this->protegidos;
+    /* Datos del Jugador. */
+    DatosJugador *descripcion;
 
-    // Destructor de Descripcion del Jugador
-    delete this->descripcion;
-}
+    /* Robos en proceso. */
+    Lista<Casillero *> *inactivos;
 
-Lista<Casillero *> *Jugador::obtenerCasilleros() const {
-    return this->casilleros;
-}
+    /* Tesoros protegidos. */
+    Lista<Casillero *> *protegidos;
 
-Lista<Carta *> *Jugador::obtenerCartas() const {
-    return this->cartas;
-}
+    /* El Jugador no ha sido eliminado. */
+    bool enJuego;
 
-unsigned int Jugador::obtenerId() const {
-    return this->descripcion->obtenerId();
-}
+    /* Ha contratado mercenarios. */
+    bool mercenariosContratados;
 
-unsigned int Jugador::obtenerCantidadDeCartas() const {
-    return this->cartas->obtenerLongitud();
-}
+public:
 
-unsigned int Jugador::obtenerCantidadDeTesorosActivos() const {
-    return this->descripcion->obtenerCantidadDeTesorosActivos();
-}
+    /*
+     * pre : -
+     * post: Inicializa un jugador identificado con el identificador dado.
+     * 		 No posee Cartas, tesoros, Casilleros, ni cambios registrados.
+     */
+    explicit Jugador(unsigned int id);
 
-unsigned int Jugador::obtenerCantidadDeTesorosRobados() const {
-    return this->descripcion->obtenerCantidadDeTesorosRobados();
-}
+    /*
+     * pre : -
+     * post: Libera los recursos asociados al Jugador.
+     */
+    virtual ~Jugador();
 
-Casillero *Jugador::obtenerCasillero(Vector<unsigned int> *coordenadas) const {
+    /*
+     * pre : -
+     * post: Devuelve los Casilleros ocupados por el Jugador.
+     */
+    Lista<Casillero *> *obtenerCasilleros() const;
 
-    if (coordenadas == NULL) {
-        throw logic_error("Las coordenadas dadas no existen");
-    } else if (coordenadas->obtenerLongitud() != CANTIDAD_DIMENSIONES) {
-        throw logic_error("Las coordenadas deben tener 3 dimensiones");
-    }
+    /*
+     * pre : -
+     * Post: Devuelve las Cartas en la mano del Jugador.
+     */
+    Lista<Carta *> *obtenerCartas() const;
 
-    unsigned int x = (*coordenadas)[0];
-    unsigned int y = (*coordenadas)[1];
-    unsigned int z = (*coordenadas)[2];
+    /*
+     * pre : -
+     * post: Devuelve el identificador del Jugador.
+     */
+    unsigned int obtenerId() const;
 
-    Casillero *casillero;
-    this->casilleros->iniciarCursor();
-    while (this->casilleros->avanzarCursor()) {
-        casillero = this->casilleros->obtenerCursor();
-        if ((casillero->obtenerX() == x) && (casillero->obtenerY() == y) && (casillero->obtenerZ() == z)) {
-            return casillero;
-        }
-    }
-    throw out_of_range("El jugador no posee un casillero con las coordenadas indicadas");
-}
+    /*
+     * pre : -
+     * post: Devuelve la cantidad de Cartas en la mano del Jugador.
+     */
+    unsigned int obtenerCantidadDeCartas() const;
 
-void Jugador::agregarCasillero(Casillero *aAgregar) {
-    if (aAgregar == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (aAgregar->obtenerJugador() != this) {
-        throw logic_error("El casillero no está ocupado por el Jugador");
-    }
+    /*
+     * pre : -
+     * post: Devuelve la cantidad de tesoros activos del Jugador.
+     */
+    unsigned int obtenerCantidadDeTesorosActivos() const;
 
-    this->casilleros->agregarElemento(aAgregar);
+    /*
+     * pre : -
+     * post: Devuelve la cantidad de tesoros robados por el Jugador.
+     */
+    unsigned int obtenerCantidadDeTesorosRobados() const;
 
-    unsigned int tipo = aAgregar->obtenerTipo();
+    /*
+     * pre : Las coordenadas deben corresponder a un Casillero ocupado por el Jugador (@throws out_of_range).
+     * 		El Vector debe existir y debe tener exactamente 3 elementos (@throws logic_error).
+     * post: Devuelve el Casillero del Jugador que corresponda a las coordenadas dadas.
+     */
+    Casillero *obtenerCasillero(Vector<unsigned int> *coordenadas) const;
 
-    if (tipo == TESORO) {
-        this->descripcion->aumentarTesorosActivos();
-    } else if (tipo == PROTEGIDO) {
-        this->descripcion->aumentarTesorosActivos();
-        this->protegidos->agregarElemento(aAgregar);
-    } else if (tipo == INACTIVO) {
-        this->inactivos->agregarElemento(aAgregar);
-    }
-}
+    /*
+     * pre : El Casillero debe existir (@throws logic_error).
+     *       El Casillero debe estar siendo ocupado por el Jugador (@throws logic_error).
+     * post: Agrega el Casillero al registro de ocupados por el Jugador.
+     *       Actualiza el registro de tesoros activos y/o de protegidos/inactivos según corresponda.
+     */
+    void agregarCasillero(Casillero *aAgregar);
 
-void Jugador::removerCasillero(Casillero *aRemover) {
+    /*
+     * pre : El Casillero debe existir (@throws logic_error).
+     *       El Casillero debe estar siendo ocupado por el Jugador (@throws logic_error).
+     *       El casillero, si es de tipo protegido, debe estar en el registro de protegidos (@throws out_of_range).
+     * post: Remueve el Casillero del registro de ocupados por el Jugador.
+     *       Actualiza el registro de tesoros activos y/o de protegidos/inactivos según corresponda.
+     */
+    void removerCasillero(Casillero *aRemover);
 
-    if (aRemover == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (aRemover->obtenerJugador() != this) {
-        throw logic_error("El casillero no está ocupado por el Jugador");
-    }
+    /*
+     * pre : La Carta debe existir (@throws logic_error).
+     *       La mano del jugador NO puede estar llena (@throws out_of_range).
+     * post: Agrega una carta a la mano.
+     */
+    void agregarCarta(Carta *carta);
 
-    unsigned int tipo = aRemover->obtenerTipo();
-    unsigned int posicion = 0;
+    /*
+     * pre : La mano NO puede estar vacía (@throws out_of_range).
+     * post: Elimina la carta de la mano, libera los recursos asociados a la carta dependiendo de 'eliminar'.
+     */
+    bool usarCarta(unsigned int tipo, bool eliminar = true);
 
-    Casillero *casillero;
+    /*
+     * pre : Debe tener cartas en su mano (@throws out_of_range).
+     * post: Obtiene una carta aleatoria de la mano del Jugador.
+     */
+    Carta *obtenerCartaAleatoria() const;
 
-    this->casilleros->iniciarCursor();
-    while (this->casilleros->avanzarCursor()) {
-        casillero = casilleros->obtenerCursor();
-        if (casillero == aRemover) {
+    /*
+     * Pre: -
+     * Post: Agrega un cambio al registro de cambios.
+     *       Actualiza el registro de tesoros robados según corresponda.
+     */
+    void agregarCambio(string cambio);
 
-            if (tipo == TESORO) {
-                this->descripcion->disminuirTesorosActivos();
-            } else if (tipo == PROTEGIDO) {
-                this->removerProtegido(casillero);
-                this->descripcion->disminuirTesorosActivos();
-            } else if (tipo == INACTIVO) {
-                this->removerInactivo(casillero);
-            }
+    /*
+     * pre : -
+     * post: Devuelve el registro de cambios.
+     */
+    Pila<string> *obtenerCambios();
 
-            this->casilleros->removerElemento(posicion);
-            return;
-        }
-        posicion++;
-    }
-    throw out_of_range("El jugador no está siendo ocupando el casillero");
-}
+    /*
+     * pre : -
+     * post: Establece el estado del jugador como eliminado, sin borrar su información.
+     */
+    void dejaDeJugar();
 
-void Jugador::agregarCarta(Carta *carta) {
-    if (carta == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (this->obtenerCantidadDeCartas() >= MAXIMO_CARTAS_EN_MANO) {
-        throw out_of_range("La mano está llena, debe descartar una carta antes de agregar otra");
-    }
-    this->cartas->agregarElemento(carta);
-}
+    /*
+     * pre : -
+     * post: Devuelve el estado del jugador.
+     */
+    bool sigueEnJuego() const;
 
-bool Jugador::usarCarta(unsigned int tipo, bool eliminar) {
+    /*
+     * pre : -
+     * post: Indica si tiene mercenarios contratados.
+     */
+    bool tieneMercenarios() const;
 
-    if (this->cartas->estaVacia()) {
-        throw out_of_range("El jugador no tiene cartas en su mano");
-    }
+    /*
+     * pre : NO debe tener mercenarios contratados (@throws logic_error).
+     * post: Asigna una tropa de mercenarios al Jugador.
+     */
+    void contratarMercenarios();
 
-    unsigned int posicion = 0;
-    this->cartas->iniciarCursor();
+    /*
+     * pre : Debe tener mercenarios contratados (@throws logic_error).
+     * post: Elimina la tropa de mercenarios del Jugador.
+     */
+    void usarMercenarios();
 
-    while (this->cartas->avanzarCursor()) {
-        if (this->cartas->obtenerCursor()->obtenerTipo() == tipo) {
-            if (eliminar) {
-                delete this->cartas->obtenerCursor();
-            }
-            this->cartas->removerElemento(posicion);
-            return true;
-        }
-        posicion++;
-    }
-    return false;
-}
+    /*
+     * pre : -
+     * post: Devuelve el registro de robos en proceso.
+     */
+    Lista<Casillero *> *obtenerInactivos();
 
-Carta *Jugador::obtenerCartaAleatoria() const {
+    /*
+     * pre : -
+     * post: Devuelve el registro de tesoros protegidos.
+     */
+    Lista<Casillero *> *obtenerProtegidos();
 
-    if (this->cartas->estaVacia()) {
-        throw out_of_range("El jugador no tiene cartas en su mano");
-    }
+    /*
+     * Pre: El Casillero debe existir (@throws logic_error).
+     *      El Casillero debe ser de tipo protegido (@throws logic_error).
+     * Post: Agrega el casillero dado al registro de protegidos.
+     */
+    void agregarProtegido(Casillero *aAgregar);
 
-    unsigned int posicionAleatoria = (rand() % (this->obtenerCantidadDeCartas()));
+    /*
+     * Pre: El Casillero debe existir (@throws logic_error).
+     *      El Casillero debe ser de tipo protegido (@throws logic_error).
+     * Post: Remueve el casillero dado al registro de protegidos.
+     */
+    void removerProtegido(Casillero *aRemover);
 
-    for (unsigned int i = 0; i <= posicionAleatoria; ++i) {
-        this->cartas->avanzarCursor();
-    }
+    /*
+     * Pre: El Casillero debe existir (@throws logic_error).
+     *      El Casillero debe ser de tipo inactivo (@throws logic_error).
+     * Post: Remueve el casillero dado al registro de robos en proceso.
+     */
+    void removerInactivo(Casillero *aRemover);
 
-    Carta *cartaAleatoria = this->cartas->obtenerCursor();
-    return cartaAleatoria;
-}
+    /*
+     * Pre: La estructura debe existir (@throws logic_error).
+     *      El Casillero debe ser de tipo inactivo (@throws logic_error).
+     * Post: Reemplaza el registro de tesoros protegidos.
+     */
+    void reemplazarProtegidos(Lista<Casillero *> *inactivos);
 
-void Jugador::agregarCambio(string cambio) {
-    this->descripcion->agregarCambio(cambio);
-    if (cambio.find("Robo finalizado") != string::npos) {
-        this->descripcion->aumentarTesorosRobados();
-    }
-}
+    /*
+     * Pre: La estructura debe existir (@throws logic_error).
+     *      El Casillero debe ser de tipo inactivo (@throws logic_error).
+     * Post: Reemplaza el registro de robos en proceso.
+     */
+    void reemplazarInactivos(Lista<Casillero *> *inactivos);
 
-void Jugador::agregarProtegido(Casillero *aAgregar) {
-    if (aAgregar == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (aAgregar->obtenerTipo() != PROTEGIDO) {
-        throw logic_error("El casillero no es de tipo protegido");
-    }
-    this->protegidos->agregarElemento(aAgregar);
-}
+};
 
-void Jugador::removerProtegido(Casillero *aRemover) {
-    if (aRemover == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (aRemover->obtenerTipo() != PROTEGIDO) {
-        throw logic_error("El casillero no es de tipo protegido");
-    }
-    this->protegidos->removerPrimerAparicion(aRemover);
-}
-
-void Jugador::removerInactivo(Casillero *aRemover) {
-
-    if (aRemover == NULL) {
-        throw logic_error("El casillero no existe");
-    } else if (aRemover->obtenerTipo() != INACTIVO) {
-        throw logic_error("El casillero no es de tipo inactivo");
-    }
-    this->inactivos->removerPrimerAparicion(aRemover);
-}
-
-Pila<string> *Jugador::obtenerCambios() {
-    return this->descripcion->obtenerCambios();
-}
-
-void Jugador::dejaDeJugar() {
-    this->enJuego = false;
-}
-
-bool Jugador::sigueEnJuego() const {
-    return this->enJuego;
-}
-
-bool Jugador::tieneMercenarios() const {
-    return this->mercenariosContratados;
-}
-
-void Jugador::contratarMercenarios() {
-    (this->tieneMercenarios()) ? (throw logic_error("Ya tiene mercenarios contratados"))
-                               : (this->mercenariosContratados = true);
-}
-
-void Jugador::usarMercenarios() {
-    (this->tieneMercenarios()) ? (this->mercenariosContratados = false) : (throw logic_error(
-            "No tiene mercenarios contratados"));
-}
-
-Lista<Casillero *> *Jugador::obtenerInactivos() {
-    return this->inactivos;
-}
-
-Lista<Casillero *> *Jugador::obtenerProtegidos() {
-    return this->protegidos;
-}
-
-void Jugador::reemplazarProtegidos(Lista<Casillero *> *protegidos) {
-
-    if (protegidos == NULL) {
-        throw logic_error("La estructura debe existir");
-    }
-
-    this->protegidos->limpiar();
-    delete this->protegidos;
-    this->protegidos = protegidos;
-}
-
-void Jugador::reemplazarInactivos(Lista<Casillero *> *inactivos) {
-
-    if (inactivos == NULL) {
-        throw logic_error("La estructura debe existir");
-    }
-
-    this->inactivos->limpiar();
-    delete this->inactivos;
-    this->inactivos = inactivos;
-}
+#endif
